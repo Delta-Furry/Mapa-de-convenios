@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Convenios Internacionales - UNEVE</title>
+    
+    <!-- Tailwind CSS para diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fuente Inter de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js y OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        /* Estilos base y variables institucionales UNEVE */
+        :root {
+            --uneve-guinda: #996067;
+            --uneve-guinda-dark: #6e3b42;
+            --uneve-gold: #D4AF37;
+            --space-bg: #07090f;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--space-bg);
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita scrollbars en la vista 3D */
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            cursor: grab;
+        }
+
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        /* Etiquetas flotantes sobre el globo 3D */
+        .globe-label {
+            position: absolute;
+            z-index: 10;
+            pointer-events: auto;
+            transform: translate(-50%, -100%);
+            transition: opacity 0.25s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .globe-label:hover {
+            transform: translate(-50%, -105%) scale(1.06);
+        }
+
+        .label-badge {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25);
+        }
+
+        /* Animación de pulso para el punto indicador */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.9; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 9999px;
+            border: 2px solid #D4AF37;
+            animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        /* Scrollbar personalizada para el modal */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--uneve-guinda);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Contenedor del Canvas 3D -->
+    <div id="canvas-container"></div>
+
+    <!-- Contenedor para etiquetas flotantes 2D proyectadas desde 3D -->
+    <div id="labels-container" class="fixed inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+    <!-- Header Institucional -->
+    <header class="fixed top-0 left-0 right-0 z-20 p-4 sm:p-6 pointer-events-none">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Título y Logo -->
+            <div class="pointer-events-auto flex items-center gap-3 bg-slate-950/75 backdrop-blur-md border border-[#996067]/40 px-4 py-2.5 rounded-2xl shadow-xl">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#996067] to-[#6e3b42] flex items-center justify-center border border-[#D4AF37]/50 shadow-inner shrink-0">
+                    <span class="text-[#D4AF37] font-bold text-lg">U</span>
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-wide text-white">
+                        Mapa de Convenios Internacionales - <span class="text-[#D4AF37]">UNEVE</span>
+                    </h1>
+                    <p class="text-xs text-slate-300/80 hidden sm:block">
+                        Universidad Estatal del Valle de Ecatepec • Arrastra para girar o haz clic en un país
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botones de Acceso Rápido -->
+            <div class="pointer-events-auto flex items-center gap-2 bg-slate-950/75 backdrop-blur-md border border-slate-800 p-1.5 rounded-2xl shadow-xl">
+                <button onclick="focusCountry('china')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#996067]/50 transition-all active:scale-95">
+                    <span>🇨🇳</span>
+                    <span>China</span>
+                </button>
+                <button onclick="focusCountry('colombia')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#996067]/50 transition-all active:scale-95">
+                    <span>🇨🇴</span>
+                    <span>Colombia</span>
+                </button>
+                <button onclick="resetView()" title="Vista General" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all active:scale-95">
+                    🌐
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Instrucción inferior sutil -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none hidden sm:block">
+        <div class="bg-slate-950/70 backdrop-blur-md border border-slate-800/80 px-4 py-1.5 rounded-full text-xs text-slate-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
+            <span>Usa el mouse para rotar y hacer zoom • Haz clic en los marcadores dorados</span>
+        </div>
+    </div>
+
+    <!-- Modal (Mini-Ventana) de Convenio Internacional -->
+    <div id="convenio-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div id="modal-card" class="relative w-full max-w-2xl bg-slate-900 border border-[#D4AF37]/40 rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col">
+            
+            <!-- Cabecera del Modal -->
+            <div class="bg-gradient-to-r from-[#6e3b42] via-[#996067] to-[#6e3b42] p-5 sm:p-6 flex items-center justify-between border-b border-[#D4AF37]/30 shrink-0">
+                <div class="flex items-center gap-3">
+                    <span id="modal-flag" class="text-3xl sm:text-4xl drop-shadow"></span>
+                    <div>
+                        <span class="text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold block">Alianza Académica</span>
+                        <h2 id="modal-title" class="text-lg sm:text-2xl font-bold text-white leading-tight"></h2>
+                    </div>
+                </div>
+                <button onclick="closeModal()" aria-label="Cerrar ventana" class="w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-colors border border-white/10">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Contenido Scrolleable -->
+            <div class="p-5 sm:p-6 overflow-y-auto custom-scroll space-y-6">
+                <!-- Descripción del Convenio -->
+                <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                    <h3 class="text-sm font-semibold text-[#D4AF37] mb-2 flex items-center gap-2">
+                        <span>📜</span> Descripción del Convenio
+                    </h3>
+                    <p id="modal-description" class="text-sm sm:text-base text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <!-- Galería de Fotos -->
+                <div>
+                    <h3 class="text-sm font-semibold text-[#D4AF37] mb-3 flex items-center gap-2">
+                        <span>📸</span> Galería de Actividades e Intercambio
+                    </h3>
+                    <div id="modal-gallery" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Las fotos se inyectan dinámicamente aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie del Modal -->
+            <div class="p-4 bg-slate-950/80 border-t border-slate-800 flex justify-end shrink-0">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-[#996067] hover:bg-[#824d54] text-white text-sm font-semibold transition-all shadow-lg active:scale-95 border border-[#D4AF37]/30">
+                    Cerrar Ventana
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. DATOS DE CONVENIOS INTERNACIONALES (Edita aquí tus fotos y textos)
+        // =========================================================================
+        const CONVENIOS_DATA = {
+            china: {
+                id: 'china',
+                name: 'China',
+                flag: '🇨🇳',
+                lat: 35.8617,
+                lon: 104.1954,
+                title: 'Convenio de Colaboración con China',
+                description: 'Alianza estratégica de la UNEVE con instituciones de educación superior en China para el intercambio académico, investigación conjunta en medicina tradicional, acupuntura, rehabilitación y movilidad estudiantil.',
+                photos: [
+                    {
+                        url: 'https://placehold.co/600x400/6e3b42/D4AF37?text=Firma+de+Convenio+China',
+                        caption: 'Firma oficial del convenio de colaboración académica e intercambio.'
+                    },
+                    {
+                        url: 'https://placehold.co/600x400/1e293b/D4AF37?text=Intercambio+Estudiantil+China',
+                        caption: 'Estudiantes y docentes participando en programas de movilidad internacional.'
+                    }
+                ]
+            },
+            colombia: {
+                id: 'colombia',
+                name: 'Colombia',
+                flag: '🇨🇴',
+                lat: 4.5709,
+                lon: -74.2973,
+                title: 'Convenio de Colaboración con Colombia',
+                description: 'Cooperación bilateral entre la UNEVE y universidades colombianas enfocada en proyectos de investigación científica, estancias académicas, congresos internacionales y desarrollo comunitario.',
+                photos: [
+                    {
+                        url: 'https://placehold.co/600x400/6e3b42/D4AF37?text=Encuentro+Academico+Colombia',
+                        caption: 'Encuentro bilateral de rectores y coordinadores académicos.'
+                    },
+                    {
+                        url: 'https://placehold.co/600x400/1e293b/D4AF37?text=Congreso+Internacional+Colombia',
+                        caption: 'Participación conjunta en seminarios y talleres de investigación.'
+                    }
+                ]
+            }
+        };
+
+        // =========================================================================
+        // 2. VARIABLES GLOBALES DE THREE.JS
+        // =========================================================================
+        const GLOBE_RADIUS = 5;
+        let scene, camera, renderer, controls;
+        let globeMesh, atmosphereMesh, starsMesh;
+        let markerMeshes = [];
+        let labelElements = {};
+        let isUserInteracting = false;
+        let targetCameraPos = null;
+
+        // =========================================================================
+        // 3. CARGA DE TEXTURAS REALES DE LA TIERRA (Con fallback procedural)
+        // =========================================================================
+        function createFallbackTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const oceanGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            oceanGrad.addColorStop(0, '#09111e');
+            oceanGrad.addColorStop(0.5, '#0d1b2a');
+            oceanGrad.addColorStop(1, '#09111e');
+            ctx.fillStyle = oceanGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function loadEarthMaterials() {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.setCrossOrigin('anonymous');
+
+            const earthMap = textureLoader.load(
+                'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+                undefined,
+                undefined,
+                () => {
+                    // Fallback elegante si falla la carga de red
+                    globeMesh.material.map = createFallbackTexture();
+                    globeMesh.material.needsUpdate = true;
+                }
+            );
+
+            const bumpMap = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png');
+            const specularMap = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
+
+            return new THREE.MeshPhongMaterial({
+                map: earthMap,
+                bumpMap: bumpMap,
+                bumpScale: 0.08,
+                specularMap: specularMap,
+                specular: new THREE.Color('#475569'),
+                shininess: 18
+            });
+        }
+
+        // =========================================================================
+        // 4. CONVERSIÓN DE COORDENADAS (Lat/Lon -> Vector3 en la esfera)
+        // =========================================================================
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // =========================================================================
+        // 5. INICIALIZACIÓN DE LA ESCENA 3D
+        // =========================================================================
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            // Escena
+            scene = new THREE.Scene();
+
+            // Cámara
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 14.5);
+
+            // Renderizador
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Controles Orbitales (Mouse y Touch)
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.enablePan = false;
+            controls.minDistance = 7.5;
+            controls.maxDistance = 24;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.6;
+
+            // Pausar auto-rotación cuando el usuario interactúa
+            controls.addEventListener('start', () => {
+                isUserInteracting = true;
+                controls.autoRotate = false;
+                targetCameraPos = null;
+            });
+            controls.addEventListener('end', () => {
+                isUserInteracting = false;
+                setTimeout(() => {
+                    if (!isUserInteracting && document.getElementById('convenio-modal').classList.contains('hidden')) {
+                        controls.autoRotate = true;
+                    }
+                }, 2500);
+            });
+
+            // Iluminación realista
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xfff5e6, 1.25);
+            dirLight.position.set(15, 10, 15);
+            scene.add(dirLight);
+
+            // Globo Terráqueo con texturas reales
+            const earthGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+            const earthMat = loadEarthMaterials();
+            globeMesh = new THREE.Mesh(earthGeo, earthMat);
+            scene.add(globeMesh);
+
+            // Halo Atmosférico sutil
+            const atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.03, 64, 64);
+            const atmosMat = new THREE.MeshBasicMaterial({
+                color: 0x996067,
+                transparent: true,
+                opacity: 0.12,
+                side: THREE.BackSide
+            });
+            atmosphereMesh = new THREE.Mesh(atmosGeo, atmosMat);
+            scene.add(atmosphereMesh);
+
+            // Campo de estrellas
+            createStars();
+
+            // Crear marcadores para China y Colombia
+            Object.values(CONVENIOS_DATA).forEach(country => {
+                createMarker(country);
+            });
+
+            // Eventos de ventana y clic en 3D
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('click', onCanvasClick);
+        }
+
+        function createStars() {
+            const starsGeo = new THREE.BufferGeometry();
+            const starCount = 1200;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 160;
+            }
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0.65 });
+            starsMesh = new THREE.Points(starsGeo, starsMat);
+            scene.add(starsMesh);
+        }
+
+        function createMarker(country) {
+            const pos = latLonToVector3(country.lat, country.lon, GLOBE_RADIUS + 0.08);
+
+            // Esfera brillante dorada
+            const markerGeo = new THREE.SphereGeometry(0.16, 20, 20);
+            const markerMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37 });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.position.copy(pos);
+            marker.userData = { countryId: country.id };
+            scene.add(marker);
+            markerMeshes.push(marker);
+
+            // Etiqueta HTML flotante
+            const labelsContainer = document.getElementById('labels-container');
+            const label = document.createElement('div');
+            label.className = 'globe-label';
+            label.innerHTML = `
+                <div class="label-badge px-3 py-1.5 rounded-full flex items-center gap-2 text-xs sm:text-sm font-semibold text-white">
+                    <span class="relative w-2.5 h-2.5 rounded-full bg-[#D4AF37] pulse-dot"></span>
+                    <span>${country.flag} ${country.name}</span>
+                </div>
+            `;
+            label.addEventListener('click', (e) => {
+                e.stopPropagation();
+                focusCountry(country.id);
+            });
+            labelsContainer.appendChild(label);
+            labelElements[country.id] = { element: label, position: pos };
+        }
+
+        // =========================================================================
+        // 6. INTERACCIÓN Y PROYECCIÓN DE ETIQUETAS
+        // =========================================================================
+        function updateLabels() {
+            const cameraDir = new THREE.Vector3();
+            camera.getWorldDirection(cameraDir);
+
+            Object.values(labelElements).forEach(({ element, position }) => {
+                // Verificar si el marcador está en la cara visible del globo
+                const toMarker = position.clone().sub(camera.position).normalize();
+                const dot = position.clone().normalize().dot(camera.position.clone().normalize());
+
+                if (dot < 0.15) {
+                    element.style.opacity = '0';
+                    element.style.pointerEvents = 'none';
+                } else {
+                    const projected = position.clone().project(camera);
+                    const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
+                    const y = (-(projected.y * 0.5) + 0.5) * window.innerHeight;
+
+                    element.style.left = `${x}px`;
+                    element.style.top = `${y - 12}px`;
+                    element.style.opacity = '1';
+                    element.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        function onCanvasClick(event) {
+            const mouse = new THREE.Vector2(
+                (event.clientX / window.innerWidth) * 2 - 1,
+                -(event.clientY / window.innerHeight) * 2 + 1
+            );
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(markerMeshes);
+
+            if (intersects.length > 0) {
+                const countryId = intersects[0].object.userData.countryId;
+                focusCountry(countryId);
+            }
+        }
+
+        // Enfocar cámara en un país y abrir su modal
+        function focusCountry(countryId) {
+            const country = CONVENIOS_DATA[countryId];
+            if (!country) return;
+
+            controls.autoRotate = false;
+            const markerPos = latLonToVector3(country.lat, country.lon, GLOBE_RADIUS);
+            targetCameraPos = markerPos.clone().normalize().multiplyScalar(11.5);
+
+            openModal(country);
+        }
+
+        function resetView() {
+            targetCameraPos = new THREE.Vector3(0, 3, 14.5);
+            controls.autoRotate = true;
+        }
+
+        // =========================================================================
+        // 7. CONTROL DEL MODAL (MINI-VENTANA)
+        // =========================================================================
+        function openModal(country) {
+            const modal = document.getElementById('convenio-modal');
+            const card = document.getElementById('modal-card');
+
+            document.getElementById('modal-flag').textContent = country.flag;
+            document.getElementById('modal-title').textContent = country.title;
+            document.getElementById('modal-description').textContent = country.description;
+
+            const gallery = document.getElementById('modal-gallery');
+            gallery.innerHTML = '';
+
+            country.photos.forEach(photo => {
+                const item = document.createElement('div');
+                item.className = 'group bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden hover:border-[#D4AF37]/50 transition-all';
+                item.innerHTML = `
+                    <div class="aspect-video overflow-hidden bg-slate-900">
+                        <img src="${photo.url}" alt="${photo.caption}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/600x400/1e293b/D4AF37?text=Foto+Convenio'">
+                    </div>
+                    <p class="p-3 text-xs text-slate-300 leading-snug">${photo.caption}</p>
+                `;
+                gallery.appendChild(item);
+            });
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('convenio-modal');
+            const card = document.getElementById('modal-card');
+
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                controls.autoRotate = true;
+            }, 250);
+        }
+
+        // Cerrar modal con tecla Escape o clic fuera de la tarjeta
+        document.getElementById('convenio-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'convenio-modal') closeModal();
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // =========================================================================
+        // 8. BUCLE DE ANIMACIÓN Y RESPONSIVIDAD
+        // =========================================================================
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (targetCameraPos) {
+                camera.position.lerp(targetCameraPos, 0.07);
+                if (camera.position.distanceTo(targetCameraPos) < 0.08) {
+                    targetCameraPos = null;
+                }
+            }
+
+            controls.update();
+            updateLabels();
+            renderer.render(scene, camera);
+        }
+
+        // Iniciar aplicación al cargar la ventana
+        window.onload = function () {
+            init();
+            animate();
+        };
+    </script>
+</body>
+</html>
