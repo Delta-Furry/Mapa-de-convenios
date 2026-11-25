@@ -83,6 +83,15 @@
             animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
         }
 
+        .pulse-dot-green::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 9999px;
+            border: 2px solid #10b981;
+            animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
         /* Scrollbar personalizada para el modal */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
@@ -124,16 +133,29 @@
             </div>
 
             <!-- Botones de Acceso Rápido -->
-            <div class="pointer-events-auto flex items-center gap-2 bg-slate-950/75 backdrop-blur-md border border-slate-800 p-1.5 rounded-2xl shadow-xl">
-                <button onclick="focusCountry('china')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#996067]/50 transition-all active:scale-95">
-                    <span>🇨🇳</span>
-                    <span>China</span>
+            <div class="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/75 backdrop-blur-md border border-slate-800 p-1.5 rounded-2xl shadow-xl max-w-full">
+                <button onclick="focusCountry('china')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#D4AF37]/50 transition-all active:scale-95">
+                    <span>🇨🇳</span><span>China</span>
                 </button>
-                <button onclick="focusCountry('colombia')" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#996067]/50 transition-all active:scale-95">
-                    <span>🇨🇴</span>
-                    <span>Colombia</span>
+                <button onclick="focusCountry('colombia')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#996067]/20 hover:bg-[#996067]/40 text-white border border-[#D4AF37]/50 transition-all active:scale-95">
+                    <span>🇨🇴</span><span>Colombia</span>
                 </button>
-                <button onclick="resetView()" title="Vista General" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all active:scale-95">
+                <button onclick="focusCountry('canada')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-100 border border-emerald-500/50 transition-all active:scale-95">
+                    <span>🇨🇦</span><span class="hidden md:inline">Canadá</span>
+                </button>
+                <button onclick="focusCountry('inglaterra')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-100 border border-emerald-500/50 transition-all active:scale-95">
+                    <span>🇬🇧</span><span class="hidden md:inline">Inglaterra</span>
+                </button>
+                <button onclick="focusCountry('irlanda')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-100 border border-emerald-500/50 transition-all active:scale-95">
+                    <span>🇮🇪</span><span class="hidden md:inline">Irlanda</span>
+                </button>
+                <button onclick="focusCountry('chile')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-100 border border-emerald-500/50 transition-all active:scale-95">
+                    <span>🇨🇱</span><span class="hidden md:inline">Chile</span>
+                </button>
+                <button onclick="focusCountry('noruega')" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-100 border border-emerald-500/50 transition-all active:scale-95">
+                    <span>🇳🇴</span><span class="hidden md:inline">Noruega</span>
+                </button>
+                <button onclick="resetView()" title="Vista General" class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all active:scale-95">
                     🌐
                 </button>
             </div>
@@ -142,9 +164,9 @@
 
     <!-- Instrucción inferior sutil -->
     <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none hidden sm:block">
-        <div class="bg-slate-950/70 backdrop-blur-md border border-slate-800/80 px-4 py-1.5 rounded-full text-xs text-slate-400 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
-            <span>Usa el mouse para rotar y hacer zoom • Haz clic en los marcadores dorados</span>
+        <div class="bg-slate-950/75 backdrop-blur-md border border-slate-800/80 px-4 py-1.5 rounded-full text-xs text-slate-300 flex items-center gap-4">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#D4AF37]"></span> Convenios / Docencia</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Beca Mexiquenses en el Extranjero</span>
         </div>
     </div>
 
@@ -157,7 +179,7 @@
                 <div class="flex items-center gap-3">
                     <span id="modal-flag" class="text-3xl sm:text-4xl drop-shadow"></span>
                     <div>
-                        <span class="text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold block">Alianza Académica</span>
+                        <span id="modal-category" class="text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold block">Alianza Académica</span>
                         <h2 id="modal-title" class="text-lg sm:text-2xl font-bold text-white leading-tight"></h2>
                     </div>
                 </div>
@@ -205,18 +227,20 @@
                 id: 'china',
                 name: 'China',
                 flag: '🇨🇳',
+                type: 'convenio',
+                category: 'Docencia e Intercambio Cultural',
                 lat: 35.8617,
                 lon: 104.1954,
-                title: 'Convenio de Colaboración con China',
-                description: 'Alianza estratégica de la UNEVE con instituciones de educación superior en China para el intercambio académico, investigación conjunta en medicina tradicional, acupuntura, rehabilitación y movilidad estudiantil.',
+                title: 'Docencia de Chino Mandarín - Maestra Li-Rui',
+                description: 'En la UNEVE contamos con la participación de la maestra Li-Rui, nativa de China, quien imparte clases de chino mandarín fortaleciendo las competencias lingüísticas, culturales y de vinculación internacional de nuestra comunidad universitaria.',
                 photos: [
                     {
-                        url: 'https://placehold.co/600x400/6e3b42/D4AF37?text=Firma+de+Convenio+China',
-                        caption: 'Firma oficial del convenio de colaboración académica e intercambio.'
+                        url: 'china1.jpg',
+                        caption: 'Maestra Li-Rui impartiendo clases de chino mandarín en la UNEVE.'
                     },
                     {
-                        url: 'https://placehold.co/600x400/1e293b/D4AF37?text=Intercambio+Estudiantil+China',
-                        caption: 'Estudiantes y docentes participando en programas de movilidad internacional.'
+                        url: 'china2.jpg',
+                        caption: 'Actividades culturales y aprendizaje del idioma chino con estudiantes.'
                     }
                 ]
             },
@@ -224,18 +248,105 @@
                 id: 'colombia',
                 name: 'Colombia',
                 flag: '🇨🇴',
+                type: 'convenio',
+                category: 'Convenio de Colaboración Académica',
                 lat: 4.5709,
                 lon: -74.2973,
-                title: 'Convenio de Colaboración con Colombia',
-                description: 'Cooperación bilateral entre la UNEVE y universidades colombianas enfocada en proyectos de investigación científica, estancias académicas, congresos internacionales y desarrollo comunitario.',
+                title: 'Convenio con Fundación Universitaria del Área Andina',
+                description: 'Se estableció un convenio de colaboración con la Universidad del Área Andina (Areandina) para la carrera de Comunicación Multimedia, sentando las bases para concretar a futuro un convenio formal de intercambio académico estudiantil y docente.',
                 photos: [
                     {
-                        url: 'https://placehold.co/600x400/6e3b42/D4AF37?text=Encuentro+Academico+Colombia',
-                        caption: 'Encuentro bilateral de rectores y coordinadores académicos.'
+                        url: 'colombia1.jpg',
+                        caption: 'Colaboración académica para la carrera de Comunicación Multimedia.'
                     },
                     {
-                        url: 'https://placehold.co/600x400/1e293b/D4AF37?text=Congreso+Internacional+Colombia',
-                        caption: 'Participación conjunta en seminarios y talleres de investigación.'
+                        url: 'colombia2.jpg',
+                        caption: 'Proyectos conjuntos con miras al futuro intercambio académico.'
+                    }
+                ]
+            },
+            canada: {
+                id: 'canada',
+                name: 'Canadá',
+                flag: '🇨🇦',
+                type: 'beca',
+                category: 'Beca "Mexiquenses en el Extranjero"',
+                lat: 56.1304,
+                lon: -106.3468,
+                title: 'Movilidad Internacional - Canadá',
+                description: 'Estudiantes de la UNEVE beneficiados con la beca "Mexiquenses en el Extranjero" realizaron una estancia de 1 mes en Canadá enfocada en el perfeccionamiento del idioma inglés.',
+                photos: [
+                    {
+                        url: 'canada1.jpg',
+                        caption: 'Estancia de 1 mes para perfeccionamiento del idioma inglés en Canadá.'
+                    }
+                ]
+            },
+            inglaterra: {
+                id: 'inglaterra',
+                name: 'Inglaterra',
+                flag: '🇬🇧',
+                type: 'beca',
+                category: 'Beca "Mexiquenses en el Extranjero"',
+                lat: 52.3555,
+                lon: -1.1743,
+                title: 'Movilidad Internacional - Inglaterra',
+                description: 'Alumnos de la UNEVE viajaron a Inglaterra gracias a la beca "Mexiquenses en el Extranjero" durante 1 mes para el perfeccionamiento del idioma inglés e inmersión cultural.',
+                photos: [
+                    {
+                        url: 'inglaterra1.jpg',
+                        caption: 'Programa de perfeccionamiento del idioma inglés (1 mes) en Inglaterra.'
+                    }
+                ]
+            },
+            irlanda: {
+                id: 'irlanda',
+                name: 'Irlanda',
+                flag: '🇮🇪',
+                type: 'beca',
+                category: 'Beca "Mexiquenses en el Extranjero"',
+                lat: 53.1424,
+                lon: -7.6921,
+                title: 'Movilidad Internacional - Irlanda',
+                description: 'Estudiantes seleccionados en la beca "Mexiquenses en el Extranjero" participaron en una estancia académica en Irlanda dedicada al perfeccionamiento del idioma inglés.',
+                photos: [
+                    {
+                        url: 'irlanda1.jpg',
+                        caption: 'Estancia de perfeccionamiento del idioma inglés en Irlanda.'
+                    }
+                ]
+            },
+            chile: {
+                id: 'chile',
+                name: 'Chile',
+                flag: '🇨🇱',
+                type: 'beca',
+                category: 'Beca "Mexiquenses en el Extranjero"',
+                lat: -35.6751,
+                lon: -71.5430,
+                title: 'Movilidad Internacional - Chile',
+                description: 'Alumnos de la UNEVE obtuvieron la beca "Mexiquenses en el Extranjero" para asistir a un Curso de Formación especializado en Chile con duración de 1 mes.',
+                photos: [
+                    {
+                        url: 'chile1.jpg',
+                        caption: 'Curso de formación de 1 mes en Chile.'
+                    }
+                ]
+            },
+            noruega: {
+                id: 'noruega',
+                name: 'Noruega',
+                flag: '🇳🇴',
+                type: 'beca',
+                category: 'Beca "Mexiquenses en el Extranjero"',
+                lat: 60.4720,
+                lon: 8.4689,
+                title: 'Movilidad Internacional - Noruega',
+                description: 'Estudiantes de la UNEVE beneficiados por la beca "Mexiquenses en el Extranjero" participaron en un Curso de Formación internacional en Noruega.',
+                photos: [
+                    {
+                        url: 'noruega1.jpg',
+                        caption: 'Participación en Curso de Formación en Noruega.'
                     }
                 ]
             }
@@ -409,10 +520,12 @@
 
         function createMarker(country) {
             const pos = latLonToVector3(country.lat, country.lon, GLOBE_RADIUS + 0.08);
+            const isBeca = country.type === 'beca';
+            const markerColor = isBeca ? 0x10b981 : 0xD4AF37;
 
-            // Esfera brillante dorada
+            // Esfera brillante (verde para beca, dorada para convenios)
             const markerGeo = new THREE.SphereGeometry(0.16, 20, 20);
-            const markerMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37 });
+            const markerMat = new THREE.MeshBasicMaterial({ color: markerColor });
             const marker = new THREE.Mesh(markerGeo, markerMat);
             marker.position.copy(pos);
             marker.userData = { countryId: country.id };
@@ -423,9 +536,11 @@
             const labelsContainer = document.getElementById('labels-container');
             const label = document.createElement('div');
             label.className = 'globe-label';
+            const dotClass = isBeca ? 'bg-emerald-400 pulse-dot-green' : 'bg-[#D4AF37] pulse-dot';
+            const borderStyle = isBeca ? 'border-color: rgba(16, 185, 129, 0.7); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(16, 185, 129, 0.3);' : '';
             label.innerHTML = `
-                <div class="label-badge px-3 py-1.5 rounded-full flex items-center gap-2 text-xs sm:text-sm font-semibold text-white">
-                    <span class="relative w-2.5 h-2.5 rounded-full bg-[#D4AF37] pulse-dot"></span>
+                <div class="label-badge px-3 py-1.5 rounded-full flex items-center gap-2 text-xs sm:text-sm font-semibold text-white" style="${borderStyle}">
+                    <span class="relative w-2.5 h-2.5 rounded-full ${dotClass}"></span>
                     <span>${country.flag} ${country.name}</span>
                 </div>
             `;
@@ -506,6 +621,7 @@
             const card = document.getElementById('modal-card');
 
             document.getElementById('modal-flag').textContent = country.flag;
+            document.getElementById('modal-category').textContent = country.category || 'Alianza Académica';
             document.getElementById('modal-title').textContent = country.title;
             document.getElementById('modal-description').textContent = country.description;
 
